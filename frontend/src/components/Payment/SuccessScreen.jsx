@@ -3,7 +3,7 @@ import { Box, Typography, Button, Zoom } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
-export default function SuccessScreen({ success, onDone }) {
+export default function SuccessScreen({ success, onDone, message }) {
   return (
     <Zoom in={true}>
       <Box sx={{ 
@@ -31,7 +31,7 @@ export default function SuccessScreen({ success, onDone }) {
               Payment Failed
             </Typography>
             <Typography variant="body2" sx={{ color: '#6b7280', mb: 4 }}>
-              Something went wrong. Please try again or use another payment method.
+              {message || 'Something went wrong. Please try again or use another payment method.'}
             </Typography>
           </>
         )}

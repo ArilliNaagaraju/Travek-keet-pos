@@ -35,12 +35,19 @@ function CaravanCard({ image, id = "CE001", price = "19", type = "Classic", rati
         '&:hover': { transform: 'translateY(-4px)' } 
       }}
     >
-      <Box sx={{ height: 160, backgroundImage: `url(${image || defaultImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+      <Box sx={{ height: 185, overflow: 'hidden' }}>
+        <img
+          src={image || defaultImage}
+          alt="Caravan"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+          onError={(e) => { e.target.src = defaultImage; }}
+        />
+      </Box>
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#111827', fontSize: '15px' }}>{id}</Typography>
           <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#111827', fontSize: '15px' }}>
-            ${price}<Typography component="span" sx={{ fontSize: '11px', color: '#6b7280', fontWeight: 400 }}>/per day</Typography>
+            ₹{price}<Typography component="span" sx={{ fontSize: '11px', color: '#6b7280', fontWeight: 400 }}>/per day</Typography>
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -189,8 +196,16 @@ export default function CaravanListingPage({ onSelectCaravan, onLogout, onAddCar
                 </Box>
                 <Box sx={{ width: '1px', minWidth: '1px', height: 40, bgcolor: '#e5e7eb' }} />
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: { xs: 1, md: 2 } }}>
-                  <Box sx={{ bgcolor: '#52d88d', p: 1, borderRadius: '50%', color: '#fff', display: 'flex' }}><CalendarMonthIcon fontSize="small" /></Box>
-                  <Typography sx={{ fontWeight: 500, color: '#374151', fontSize: '14px', whiteSpace: 'nowrap' }}>07-12-2001 &nbsp; 16-02-2004</Typography>
+                  <Paper elevation={0} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: '6px 10px', borderRadius: 6, bgcolor: '#f8fafc' }}>
+                    <Box sx={{ bgcolor: '#f1f5f9', p: 1, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <CalendarMonthIcon fontSize="small" sx={{ color: '#059669' }} />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                      <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '13px' }}>07 Dec 2001</Typography>
+                      <Typography sx={{ fontSize: '12px', color: '#6b7280' }}>16 Feb 2004</Typography>
+                    </Box>
+                    <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', color: '#94a3b8' }}>—</Box>
+                  </Paper>
                 </Box>
                 <IconButton sx={{ bgcolor: '#52d88d', color: '#fff', '&:hover': { bgcolor: '#4ade80' }, ml: { xs: 1, md: 2 }, width: 44, height: 44, flexShrink: 0 }}>
                   <SearchIcon />
@@ -249,33 +264,34 @@ export default function CaravanListingPage({ onSelectCaravan, onLogout, onAddCar
           </Box>
 
           {/* Footer */}
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, bgcolor: '#52d88d', color: '#fff', px: { xs: 4, md: 8 }, py: 6 }}>
-            <Box sx={{ flex: 1.5, pr: { md: 4 } }}>
-              <img src={footerLogo} alt="TravelKeet" style={{ height: 40, background: 'transparent', marginBottom: '16px' }} />
-              <Typography variant="caption" sx={{ display: 'block', lineHeight: 1.6, color: 'rgba(255,255,255,0.9)' }}>
-                In an industry witnessing expected growth, Travelkeet is truly carving a
-                name for itself by adding value to enjoyable vacation destinations. We
-                are not just building tourism facilities; we are creating experiences!
-              </Typography>
-            </Box>
-            <Box sx={{ flex: 0.8 }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, mb: 2, display: 'block', textTransform: 'uppercase' }}>COMPANY</Typography>
-              <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.9)', mb: 1, cursor: 'pointer' }}>Our Vehicles</Typography>
-              <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.9)', mb: 1, cursor: 'pointer' }}>About Us</Typography>
-              <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.9)', mb: 1, cursor: 'pointer' }}>Blogs</Typography>
-              <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.9)', mb: 1, cursor: 'pointer' }}>FAQ</Typography>
-            </Box>
-            <Box sx={{ flex: 0.8 }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, mb: 2, display: 'block', textTransform: 'uppercase' }}>SERVICES</Typography>
-              <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.9)', mb: 1, cursor: 'pointer' }}>Campervan</Typography>
-              <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.9)', mb: 1, cursor: 'pointer' }}>CFC</Typography>
-            </Box>
-            <Box sx={{ flex: 0.8 }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, mb: 2, display: 'block', textTransform: 'uppercase' }}>INFORMATION</Typography>
-              <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.9)', mb: 1, cursor: 'pointer' }}>Contact</Typography>
-              <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.9)', mb: 1, cursor: 'pointer' }}>Privacy Policy</Typography>
-              <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255,255,255,0.9)', mb: 1, cursor: 'pointer' }}>Terms & Conditions</Typography>
-            </Box>
+          <Box sx={{ bgcolor: '#52d88d', color: '#fff', px: { xs: 4, md: 10 }, py: 6 }}>
+            <Grid container spacing={6}>
+              <Grid size={{ xs: 12, md: 5 }}>
+                <img src={footerLogo} alt="TravelKeet" style={{ height: 46, display: 'block', marginBottom: '16px', objectFit: 'contain' }} />
+                <Typography sx={{ fontSize: '13px', lineHeight: 1.8, color: 'rgba(255,255,255,0.9)' }}>
+                  In an industry witnessing expected growth, TravelKeet is truly carving a name for itself by adding value to enjoyable vacation destinations. We are not just building tourism facilities, we're creating experiences!
+                </Typography>
+              </Grid>
+              <Grid size={{ xs: 6, md: 2 }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, fontSize: '13px', textTransform: 'uppercase' }}>COMPANY</Typography>
+                {['Our Vehicles', 'About Us', 'Blogs', 'FAQ'].map(t => (
+                  <Typography key={t} sx={{ fontSize: '13px', mb: 1.5, color: 'rgba(255,255,255,0.9)', cursor: 'pointer' }}>{t}</Typography>
+                ))}
+              </Grid>
+              <Grid size={{ xs: 6, md: 2 }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, fontSize: '13px', textTransform: 'uppercase' }}>SERVICES</Typography>
+                {['Campervan', 'CFC'].map(t => (
+                  <Typography key={t} sx={{ fontSize: '13px', mb: 1.5, color: 'rgba(255,255,255,0.9)', cursor: 'pointer' }}>{t}</Typography>
+                ))}
+              </Grid>
+              <Grid size={{ xs: 6, md: 3 }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, fontSize: '13px', textTransform: 'uppercase' }}>INFORMATION</Typography>
+                {['Contact', 'Privacy Policy', 'Terms & Conditions'].map(t => (
+                  <Typography key={t} sx={{ fontSize: '13px', mb: 1.5, color: 'rgba(255,255,255,0.9)', cursor: 'pointer' }}>{t}</Typography>
+                ))}
+              </Grid>
+            </Grid>
+            <Typography sx={{ textAlign: 'center', mt: 6, fontSize: '12px', opacity: 0.8 }}>© 2024 Copyright: TravelKeet</Typography>
           </Box>
 
         </Box>

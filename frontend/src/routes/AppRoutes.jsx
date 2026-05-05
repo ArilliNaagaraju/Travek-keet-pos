@@ -36,47 +36,51 @@ export default function AppRoutes() {
   }
 
   if (screen === "register") {
-    return <RegisterPage onCancel={() => setScreen("user-register")} onSubmit={() => setScreen("caravan")} />;
+    return <RegisterPage onCancel={() => setScreen("listing")} onSubmit={() => setScreen("caravan")} />;
   }
 
   if (screen === "caravan") {
-    return <AddCaravanPage onCancel={() => setScreen("register")} onSubmit={() => setScreen("listing")} />;
+    return <AddCaravanPage onCancel={() => setScreen("listing")} onSubmit={() => setScreen("listing")} />;
+  }
+
+  if (screen === "add-caravan") {
+    return <AddCaravanPage onCancel={() => setScreen("listing")} onSubmit={() => setScreen("listing")} />;
   }
 
   if (screen === "listing") {
     return (
-      <CaravanListingPage 
-        onSelectCaravan={(caravan) => { 
-          setSelectedCaravan(caravan); 
-          setScreen("details"); 
-        }} 
+      <CaravanListingPage
+        onSelectCaravan={(caravan) => {
+          setSelectedCaravan(caravan);
+          setScreen("details");
+        }}
         onLogout={() => setScreen("login")}
-        onAddCaravan={() => setScreen("register")}
+        onAddCaravan={() => setScreen("add-caravan")}
       />
     );
   }
 
   if (screen === "details") {
     return (
-      <CaravanDetailsPage 
-        caravan={selectedCaravan} 
-        onCompare={() => setScreen("compare")} 
-        onProceedBooking={() => setScreen("booking")} 
-        onGoHome={handleGoHome} 
+      <CaravanDetailsPage
+        caravan={selectedCaravan}
+        onCompare={() => setScreen("compare")}
+        onProceedBooking={() => setScreen("booking")}
+        onGoHome={handleGoHome}
         onLogout={() => setScreen("login")}
-        onAddCaravan={() => setScreen("register")}
+        onAddCaravan={() => setScreen("add-caravan")}
       />
     );
   }
 
   if (screen === "compare") {
     return (
-      <ComparePage 
-        selectedCaravan={selectedCaravan} 
-        onProceedBooking={() => setScreen("booking")} 
-        onGoHome={handleGoHome} 
+      <ComparePage
+        selectedCaravan={selectedCaravan}
+        onProceedBooking={() => setScreen("booking")}
+        onGoHome={handleGoHome}
         onLogout={() => setScreen("login")}
-        onAddCaravan={() => setScreen("register")}
+        onAddCaravan={() => setScreen("add-caravan")}
       />
     );
   }

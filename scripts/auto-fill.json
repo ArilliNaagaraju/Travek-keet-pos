@@ -1,0 +1,46 @@
+{
+  "headless": false,
+  "defaultValue": "DemoUser",
+  "login": {
+    "url": "http://localhost:3000/login",
+    "credentials": {
+      "input[name=\"email\"]": "demo@travelkeet.test",
+      "input[name=\"password\"]": "DemoPass123"
+    },
+    "submitSelector": "button[type=submit]",
+    "waitAfterSubmit": 1500
+  },
+  "steps": [
+    {
+      "url": "http://localhost:3000/register",
+      "waitFor": "form",
+      "fields": [
+        { "selector": "input[name=firstName]", "value": "Demo" },
+        { "selector": "input[name=lastName]", "value": "User" },
+        { "selector": "input[name=email]", "value": "demo+reg@travelkeet.test" },
+        { "selector": "input[name=password]", "value": "DemoPass123" }
+      ],
+      "submitSelector": "button[type=submit]",
+      "waitAfter": 1200
+    },
+    {
+      "url": "http://localhost:3000/account",
+      "waitFor": "form",
+      "fields": [
+        { "selector": "input[name=phone]", "value": "9999999999" },
+        { "selector": "input[name=address]", "value": "Demo Address" }
+      ],
+      "submitSelector": "button[type=submit]",
+      "waitAfter": 800
+    },
+    {
+      "url": "http://localhost:3000/booking",
+      "waitFor": "form",
+      "fields": [],
+      "submitSelector": "button[type=submit]",
+      "waitAfter": 2000
+    }
+  ],
+  "screenshot": true,
+  "screenshotPath": "scripts/auto-fill-result.png"
+}

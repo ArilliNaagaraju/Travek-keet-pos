@@ -10,22 +10,39 @@ function fileToDataUrl(file) {
 async function addCaravan(req, res, next) {
   try {
     const parsedBody = req.body?.payload ? JSON.parse(req.body.payload) : req.body;
-    const files = req.files || {};
 
-    const uploadFilesByField = (fieldName) => {
-      const fieldFiles = files[fieldName] || [];
-      return fieldFiles.map(fileToDataUrl);
-    };
+    // upload.any() gives req.files as a flat array; group by fieldname
+    const filesArray = req.files || [];
+    const filesByField = {};
+    filesArray.forEach((f) => {
+      if (!filesByField[f.fieldname]) filesByField[f.fieldname] = [];
+      filesByField[f.fieldname].push(f);
+    });
+
+    const toDataUrls = (fieldName) =>
+      (filesByField[fieldName] || []).map(fileToDataUrl);
 
     if (!parsedBody.details) parsedBody.details = {};
 
-    const displayImages = uploadFilesByField("displayImages");
-    const registrationDetails = uploadFilesByField("registrationDetails");
-    const seatingImages = uploadFilesByField("seatingImages");
+    // Standard image fields
+    const displayImages = toDataUrls("displayImages");
+    const registrationDetails = toDataUrls("registrationDetails");
+    const seatingImages = toDataUrls("seatingImages");
 
     if (displayImages.length) parsedBody.details.displayImages = displayImages;
     if (registrationDetails.length) parsedBody.details.registrationDetails = registrationDetails;
     if (seatingImages.length) parsedBody.details.seatingImages = seatingImages;
+
+    // Amenity photo fields (any field ending with "Photo")
+    const amenityPhotos = {};
+    Object.keys(filesByField).forEach((fieldName) => {
+      if (fieldName.endsWith("Photo")) {
+        amenityPhotos[fieldName] = fileToDataUrl(filesByField[fieldName][0]);
+      }
+    });
+    if (Object.keys(amenityPhotos).length > 0) {
+      parsedBody.amenityPhotos = amenityPhotos;
+    }
 
     const caravan = new Caravan(parsedBody);
     await caravan.save();

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Typography, Button, Container, Paper, Stepper, Step, StepLabel, Grid, TextField, Avatar, Tabs, Tab, Card, Divider, Chip, CircularProgress } from "@mui/material";
+import { Box, Typography, Button, Container, Paper, Stepper, Step, StepLabel, Grid2 as Grid, TextField, Avatar, Tabs, Tab, Card, Divider, Chip, CircularProgress } from "@mui/material";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import logo from "../../assets/logo.jpeg";
 import PaymentModal from "../../components/Payment/PaymentModal";
@@ -75,14 +75,37 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
     }));
   };
 
+  // Calculate number of nights between pickup and drop date
+  const getNights = () => {
+    const { pickupDate, dropDate } = formData.caravanBooking;
+    if (!pickupDate || !dropDate) return 0;
+    const start = new Date(pickupDate);
+    const end = new Date(dropDate);
+    const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
+  };
+
+  const getPricePerNight = () =>
+    parseFloat((caravan?.pricing?.pricePerNight || "0").toString().replace(/,/g, '')) || 0;
+
+  const getCaravanTotal = () => {
+    const nights = getNights();
+    const ppn = getPricePerNight();
+    return nights > 0 ? nights * ppn : ppn;
+  };
+
+  const getGrandTotal = () =>
+    formData.nestBooking.booked
+      ? getCaravanTotal() + 5000
+      : getCaravanTotal();
+
   const saveBookingToDb = async () => {
     setLoading(true);
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       if (!user?._id) return;
 
-      const cleanPrice = caravan?.pricing?.pricePerNight?.toString().replace(/,/g, '') || "0";
-      const total = stage === "step1" ? cleanPrice : (parseInt(cleanPrice) + 5000);
+      const total = getGrandTotal();
 
       const payload = {
         caravanId: caravan._id,
@@ -129,43 +152,87 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
               </Tabs>
 
               <Card variant="outlined" sx={{ display: 'flex', p: 3, alignItems: 'center', gap: 4, borderRadius: 3 }}>
-                <Box sx={{ width: 140, height: 100, borderRadius: 2, overflow: 'hidden' }}>
-                  <img src={caravan?.details?.displayImages?.[0] || defaultImage} alt="trip" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {/* Caravan image */}
+                <Box sx={{ width: 140, height: 100, borderRadius: 2, overflow: 'hidden', flexShrink: 0 }}>
+                  <img
+                    src={caravan?.details?.displayImages?.[0] || defaultImage}
+                    alt="Caravan"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { e.target.src = defaultImage; }}
+                  />
                 </Box>
+
+                {/* Booking info */}
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 800 }}>TRAVELKT-{caravan?.details?.vehicleNumber || "23"}</Typography>
-                  <Typography variant="body2" sx={{ color: '#6b7280', mb: 1 }}>Booking Date: {new Date().toLocaleDateString()}</Typography>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Chip size="small" label={formData.caravanBooking.pickupDate || "Feb. 5, 2025"} variant="outlined" />
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#52d88d' }}>₹{caravan?.pricing?.pricePerNight || "20,000"}</Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                    TRAVELKT-{caravan?.details?.vehicleNumber || "23"}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#6b7280', mb: 1.5 }}>
+                    Booking Date: {new Date().toLocaleDateString()}
+                  </Typography>
+
+                  {/* Date range chips */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                    <Chip size="small" label={formData.caravanBooking.pickupDate || "Start date"} variant="outlined" />
+                    <Typography variant="body2" sx={{ color: '#6b7280' }}>→</Typography>
+                    <Chip size="small" label={formData.caravanBooking.dropDate || "End date"} variant="outlined" />
+                    {getNights() > 0 && (
+                      <Chip size="small" label={`${getNights()} night${getNights() > 1 ? 's' : ''}`} sx={{ bgcolor: '#f0fdf4', color: '#15803d', fontWeight: 700 }} />
+                    )}
+                  </Box>
+
+                  {/* Personal Details */}
+                  {formData.personalDetails.guestName && (
+                    <Typography variant="caption" sx={{ color: '#4b5563', display: 'block', mb: 0.5 }}>
+                      Guest: <strong>{formData.personalDetails.guestName}</strong>
+                      {formData.personalDetails.paxCount > 0 && ` | Pax: ${formData.personalDetails.paxCount}`}
+                      {formData.personalDetails.guestAge > 0 && ` | Age: ${formData.personalDetails.guestAge}`}
+                      {formData.personalDetails.aadharNumber && ` | Aadhar: ${formData.personalDetails.aadharNumber}`}
+                    </Typography>
+                  )}
+
+                  {/* Price breakdown */}
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#52d88d' }}>
+                      ₹{getGrandTotal().toLocaleString('en-IN')}
+                    </Typography>
+                    {getNights() > 0 && (
+                      <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                        ({getNights()} × ₹{getPricePerNight().toLocaleString('en-IN')}{formData.nestBooking.booked ? ' + ₹5,000 Nest' : ''})
+                      </Typography>
+                    )}
                   </Box>
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  <Button variant="contained" disableElevation sx={{ bgcolor: stage === "waiting" ? '#f59e0b' : '#10b981', fontWeight: 700, borderRadius: 2, textTransform: 'none' }}>
+
+                {/* Action buttons */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, flexShrink: 0 }}>
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    sx={{ bgcolor: stage === "waiting" ? '#f59e0b' : '#10b981', fontWeight: 700, borderRadius: 2, textTransform: 'none', minWidth: 140 }}
+                  >
                     {stage === "waiting" ? "Waiting for Approval" : "Approved"}
                   </Button>
-                  <Button 
-                    variant="contained" 
-                    sx={{ bgcolor: '#374151', color: '#fff', fontWeight: 700, borderRadius: 2, textTransform: 'none', '&:hover': { bgcolor: '#1f2937' } }} 
-                    onClick={() => {
-                      console.log("Opening Payment Modal...");
-                      setShowPayment(true);
-                    }}
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    sx={{ bgcolor: '#374151', color: '#fff', fontWeight: 700, borderRadius: 2, textTransform: 'none', minWidth: 140, '&:hover': { bgcolor: '#1f2937' } }}
+                    onClick={() => setShowPayment(true)}
                   >
-                    Pay Now
+                    Pay Now — ₹{getGrandTotal().toLocaleString('en-IN')}
                   </Button>
                 </Box>
               </Card>
             </Paper>
           </Container>
         </Box>
-        <PaymentModal 
-          open={showPayment} 
+        <PaymentModal
+          open={showPayment}
           onClose={(success) => {
             setShowPayment(false);
             if (success) saveBookingToDb();
-          }} 
-          amount={caravan?.pricing?.pricePerNight} 
+          }}
+          amount={getGrandTotal()}
         />
       </>
     );
@@ -197,9 +264,42 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
       <Container maxWidth="lg">
         <Paper elevation={0} sx={{ p: { xs: 2, md: 6 }, borderRadius: 4, border: '1px solid #e5e7eb' }}>
           <TopNav onGoHome={onGoHome} />
-          <Typography variant="h4" sx={{ fontWeight: 900, mb: 1 }}>BOOKING</Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 6 }}>Follow the steps to complete your booking for {caravan?.details?.vehicleNumber}</Typography>
-          
+
+          {/* Booking Hero Banner */}
+          <Box
+            sx={{
+              borderRadius: 3,
+              overflow: 'hidden',
+              mb: 5,
+              background: 'linear-gradient(120deg, #2e3e52 0%, #34c37d 100%)',
+              position: 'relative',
+              minHeight: 100,
+              display: 'flex',
+              alignItems: 'center',
+              px: { xs: 3, md: 5 },
+              py: 3,
+            }}
+          >
+            <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.18)', borderRadius: 3 }} />
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography
+                variant="overline"
+                sx={{ color: 'rgba(255,255,255,0.75)', letterSpacing: 4, fontSize: '11px', display: 'block', mb: 0.5 }}
+              >
+                BOOKING
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 900, color: '#fff', lineHeight: 1.2, mb: 0.5 }}>
+                Complete Your Booking
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)', mt: 0.5 }}>
+                Follow the steps to book &nbsp;
+                <Box component="span" sx={{ fontWeight: 800, bgcolor: 'rgba(255,255,255,0.2)', px: 1.5, py: 0.3, borderRadius: 8 }}>
+                  {caravan?.details?.vehicleNumber || "your caravan"}
+                </Box>
+              </Typography>
+            </Box>
+          </Box>
+
           <StepperHeader activeStep={activeStepIndex} />
 
           {/* Step 1: Caravan Booking */}
@@ -218,9 +318,9 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 6 }}><TextField label="Pickup Date" type="date" value={formData.caravanBooking.pickupDate} onChange={(e) => handleInputChange('caravanBooking', 'pickupDate', e.target.value)} InputLabelProps={{ shrink: true }} fullWidth size="small" /></Grid>
                     <Grid size={{ xs: 6 }}><TextField label="Drop Date" type="date" value={formData.caravanBooking.dropDate} onChange={(e) => handleInputChange('caravanBooking', 'dropDate', e.target.value)} InputLabelProps={{ shrink: true }} fullWidth size="small" /></Grid>
-                    <Grid size={{ xs: 12 }}><TextField label="Pickup Location" placeholder="Enter city" value={formData.caravanBooking.pickupLocation} onChange={(e) => handleInputChange('caravanBooking', 'pickupLocation', e.target.value)} fullWidth size="small" /></Grid>
-                    <Grid size={{ xs: 6 }}><TextField label="Destination" placeholder="Enter destination" value={formData.caravanBooking.destination} onChange={(e) => handleInputChange('caravanBooking', 'destination', e.target.value)} fullWidth size="small" /></Grid>
-                    <Grid size={{ xs: 6 }}><TextField label="Drop Location" placeholder="Enter drop city" value={formData.caravanBooking.dropLocation} onChange={(e) => handleInputChange('caravanBooking', 'dropLocation', e.target.value)} fullWidth size="small" /></Grid>
+                    <Grid size={{ xs: 4 }}><TextField label="Pickup Location" placeholder="Enter city" value={formData.caravanBooking.pickupLocation} onChange={(e) => handleInputChange('caravanBooking', 'pickupLocation', e.target.value)} fullWidth size="small" /></Grid>
+                    <Grid size={{ xs: 4 }}><TextField label="Destination" placeholder="Enter destination" value={formData.caravanBooking.destination} onChange={(e) => handleInputChange('caravanBooking', 'destination', e.target.value)} fullWidth size="small" /></Grid>
+                    <Grid size={{ xs: 4 }}><TextField label="Drop Location" placeholder="Enter drop city" value={formData.caravanBooking.dropLocation} onChange={(e) => handleInputChange('caravanBooking', 'dropLocation', e.target.value)} fullWidth size="small" /></Grid>
                   </Grid>
                 </Grid>
               </Grid>
@@ -269,8 +369,19 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <Typography variant="h6" sx={{ color: '#6b7280', fontSize: '14px' }}>ESTIMATED TOTAL</Typography>
+              {/* Breakdown line */}
+              {getNights() > 0 ? (
+                <Typography variant="caption" sx={{ color: '#6b7280', display: 'block', mb: 0.5 }}>
+                  {getNights()} night{getNights() > 1 ? 's' : ''} × ₹{getPricePerNight().toLocaleString('en-IN')}
+                  {formData.nestBooking.booked && ' + ₹5,000 (Nest)'}
+                </Typography>
+              ) : (
+                <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5 }}>
+                  Select pickup & drop dates to see total
+                </Typography>
+              )}
               <Typography variant="h4" sx={{ fontWeight: 900, color: '#52d88d' }}>
-                ₹ {stage === "step1" ? caravan?.pricing?.pricePerNight : (parseInt(caravan?.pricing?.pricePerNight) + 5000) || "25,000"}/-
+                ₹{getGrandTotal().toLocaleString('en-IN')}/-
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
@@ -302,13 +413,13 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
           </Box>
         </Paper>
       </Container>
-      <PaymentModal 
-        open={showPayment} 
+      <PaymentModal
+        open={showPayment}
         onClose={(success) => {
           setShowPayment(false);
           if (success) saveBookingToDb();
-        }} 
-        amount={stage === "step1" ? caravan?.pricing?.pricePerNight : (parseInt(caravan?.pricing?.pricePerNight?.toString().replace(/,/g, '') || "0") + 5000)} 
+        }}
+        amount={getGrandTotal()}
       />
     </Box>
   );

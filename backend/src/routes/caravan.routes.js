@@ -5,15 +5,8 @@ const { addCaravan, getCaravans } = require("../controllers/caravan.controller")
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post(
-  "/",
-  upload.fields([
-    { name: "displayImages", maxCount: 10 },
-    { name: "registrationDetails", maxCount: 10 },
-    { name: "seatingImages", maxCount: 10 },
-  ]),
-  addCaravan
-);
+// upload.any() accepts all file fields (displayImages, amenity photos, etc.)
+router.post("/", upload.any(), addCaravan);
 router.get("/", getCaravans);
 
 module.exports = router;

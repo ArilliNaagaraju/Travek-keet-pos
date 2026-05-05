@@ -64,6 +64,11 @@ const caravanSchema = new mongoose.Schema(
       fixedKms: { type: String },
       pricePerNight: { type: String },
       extraKmsRate: { type: String }
+    },
+    amenityPhotos: {
+      type: Map,
+      of: String,
+      default: {}
     }
   },
   { timestamps: true }

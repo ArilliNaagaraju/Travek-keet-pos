@@ -2,9 +2,38 @@ import { useState, useEffect } from 'react';
 import { Box, Typography, Button, Grid2 as Grid, Container, Paper, IconButton, Avatar, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CloseIcon from '@mui/icons-material/Close';
 import logo from "../../assets/logo.jpeg";
 import footerLogo from "../../assets/footer.png";
 import truckImage from "../../assets/truckimage.jpeg";
+
+const SECTION_ITEMS = {
+  'Bedroom': [
+    { label: 'Sleeping Bed (In Built)', imgKey: 0 },
+    { label: 'Sleeping Bed Pop Up', imgKey: 1 },
+    { label: 'Sleeping Sofa', imgKey: 2 },
+  ],
+  'Restroom': [
+    { label: 'Toilet', imgKey: 0 },
+    { label: 'Shower', imgKey: 1 },
+    { label: 'Sink', imgKey: 2 },
+  ],
+  'Kitchen': [
+    { label: 'Stove', imgKey: 0 },
+    { label: 'Refrigerator', imgKey: 1 },
+    { label: 'Utensil Storage', imgKey: 2 },
+  ],
+  'Living Room': [
+    { label: 'Sofa Seating', imgKey: 0 },
+    { label: 'Mobile Charging point', imgKey: 1 },
+    { label: 'Fan', imgKey: 2 },
+  ],
+  'Others': [
+    { label: 'WiFi', imgKey: 0 },
+    { label: 'Battery Inverter', imgKey: 1 },
+    { label: 'Security Camera', imgKey: 2 },
+  ],
+};
 
 function BrandMark({ size = 32, image = logo }) {
   return (
@@ -26,22 +55,28 @@ function BrandMark({ size = 32, image = logo }) {
   );
 }
 
-function SectionGallery({ title, images = [] }) {
-  const galleryItems = [0, 1, 2].map((index) => images[index] || truckImage);
+function SectionGallery({ title, images = [], onImageClick }) {
+  const items = SECTION_ITEMS[title] || [];
   return (
     <Box sx={{ mb: 6 }}>
       <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, textAlign: 'center', minHeight: 32 }}>{title}</Typography>
       <Grid container spacing={2}>
-        {galleryItems.map((image, i) => (
-          <Grid size={{ xs: 4 }} key={`${title}-${i}`}>
-            <Box sx={{ borderRadius: 2, overflow: 'hidden', height: 100, mb: 1 }}>
-              <img src={image} alt="Gallery" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </Box>
-            <Typography sx={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, minHeight: 30 }}>
-              {i === 1 ? "Sleeping Bed (In Built)" : i === 2 ? "Sleeping Bed Pop Up" : "Sleeping Sofa"}
-            </Typography>
-          </Grid>
-        ))}
+        {items.map((item, i) => {
+          const imgSrc = images[item.imgKey] || truckImage;
+          return (
+            <Grid size={{ xs: 4 }} key={`${title}-${i}`}>
+              <Box
+                onClick={() => onImageClick && onImageClick(imgSrc)}
+                sx={{ borderRadius: 2, overflow: 'hidden', height: 100, mb: 1, cursor: 'pointer', '&:hover': { opacity: 0.85 } }}
+              >
+                <img src={imgSrc} alt={item.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </Box>
+              <Typography sx={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, minHeight: 30 }}>
+                {item.label}
+              </Typography>
+            </Grid>
+          );
+        })}
       </Grid>
     </Box>
   );
@@ -49,22 +84,53 @@ function SectionGallery({ title, images = [] }) {
 
 function CompareDetailColumn({ caravan, onBookNow }) {
   const defaultImage = "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=800&q=80";
+  const [lightboxImage, setLightboxImage] = useState(null);
+  const [selectedMainImage, setSelectedMainImage] = useState(null);
+
   if (!caravan) return null;
+
   const galleryImages = caravan.details?.displayImages?.length ? caravan.details.displayImages : [defaultImage];
+  const mainImg = selectedMainImage || galleryImages[0] || defaultImage;
 
   return (
     <Box sx={{ px: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Lightbox Dialog */}
+      <Dialog open={!!lightboxImage} onClose={() => setLightboxImage(null)} maxWidth="md" fullWidth>
+        <Box sx={{ position: 'relative', bgcolor: '#000' }}>
+          <IconButton
+            onClick={() => setLightboxImage(null)}
+            sx={{ position: 'absolute', top: 8, right: 8, bgcolor: 'rgba(0,0,0,0.5)', color: '#fff', zIndex: 1, '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' } }}
+          >
+            <CloseIcon />
+          </IconButton>
+          {lightboxImage && (
+            <img src={lightboxImage} alt="Full view" style={{ width: '100%', maxHeight: '80vh', objectFit: 'contain', display: 'block' }} />
+          )}
+        </Box>
+      </Dialog>
+
       {/* Gallery */}
       <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {galleryImages.slice(0, 6).map((image, i) => (
-            <Box key={`${caravan._id || caravan.details?.vehicleNumber}-${i}`} sx={{ width: 45, height: 35, borderRadius: 1, overflow: 'hidden' }}>
+            <Box
+              key={`${caravan._id || caravan.details?.vehicleNumber}-${i}`}
+              onClick={() => setSelectedMainImage(image)}
+              sx={{
+                width: 45, height: 35, borderRadius: 1, overflow: 'hidden', cursor: 'pointer',
+                border: mainImg === image ? '2px solid #52d88d' : '2px solid transparent',
+                transition: 'border 0.15s',
+              }}
+            >
               <img src={image || defaultImage} alt="Thumbnail" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </Box>
           ))}
         </Box>
-        <Box sx={{ flex: 1, borderRadius: 2, overflow: 'hidden', height: 280 }}>
-          <img src={galleryImages[0] || defaultImage} alt="Caravan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <Box
+          onClick={() => setLightboxImage(mainImg)}
+          sx={{ flex: 1, borderRadius: 2, overflow: 'hidden', height: 280, cursor: 'pointer', '&:hover': { opacity: 0.9 } }}
+        >
+          <img src={mainImg} alt="Caravan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </Box>
       </Box>
 
@@ -98,16 +164,16 @@ function CompareDetailColumn({ caravan, onBookNow }) {
         </Box>
       </Box>
 
-      <SectionGallery title="Bedroom" images={galleryImages} />
-      <SectionGallery title="Restroom" images={galleryImages} />
-      <SectionGallery title="Kitchen" images={galleryImages} />
-      <SectionGallery title="Living Room" images={galleryImages} />
-      <SectionGallery title="Others" images={galleryImages} />
+      <SectionGallery title="Bedroom" images={galleryImages} onImageClick={setLightboxImage} />
+      <SectionGallery title="Restroom" images={galleryImages} onImageClick={setLightboxImage} />
+      <SectionGallery title="Kitchen" images={galleryImages} onImageClick={setLightboxImage} />
+      <SectionGallery title="Living Room" images={galleryImages} onImageClick={setLightboxImage} />
+      <SectionGallery title="Others" images={galleryImages} onImageClick={setLightboxImage} />
 
       <Box sx={{ display: 'flex', gap: 2, mt: 'auto', mb: 8 }}>
-        <Button 
-          variant="contained" 
-          fullWidth 
+        <Button
+          variant="contained"
+          fullWidth
           onClick={onBookNow}
           sx={{ bgcolor: '#52d88d', textTransform: 'none', fontWeight: 800, fontSize: '12px' }}
         >
@@ -122,8 +188,8 @@ function CompareDetailColumn({ caravan, onBookNow }) {
 function CaravanCardListItem({ caravan, onClick }) {
   const defaultImage = "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=400&q=80";
   return (
-    <Paper 
-      elevation={3} 
+    <Paper
+      elevation={3}
       onClick={onClick}
       sx={{ borderRadius: 2, overflow: 'hidden', bgcolor: '#fff', mb: 3, cursor: 'pointer', transition: 'transform 0.1s', '&:hover': { transform: 'scale(1.02)' } }}
     >
@@ -185,8 +251,8 @@ export default function ComparePage({ selectedCaravan, onProceedBooking, onGoHom
           <img src={logo} alt="TravelKeet" style={{ height: 40 }} />
           <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
             {['Home', 'Become a Partner', 'Services', 'My bookings', 'Contact Us'].map(item => (
-              <Typography 
-                key={item} 
+              <Typography
+                key={item}
                 onClick={() => {
                   if (item === 'Home') onGoHome && onGoHome();
                   if (item === 'Become a Partner') onAddCaravan && onAddCaravan();
@@ -196,7 +262,7 @@ export default function ComparePage({ selectedCaravan, onProceedBooking, onGoHom
                 {item}
               </Typography>
             ))}
-            <IconButton 
+            <IconButton
               onClick={handleMenuOpen}
               sx={{ border: '1px solid #d1d5db', color: '#374151', p: 0.5 }}
             >
@@ -274,9 +340,7 @@ export default function ComparePage({ selectedCaravan, onProceedBooking, onGoHom
       <Box sx={{ bgcolor: '#52d88d', color: '#fff', py: 8, px: { xs: 4, md: 10 }, mt: 0 }}>
         <Grid container spacing={8}>
           <Grid size={{ xs: 12, md: 5 }}>
-            <Box sx={{ mb: 3 }}>
-              <BrandMark size={54} image={footerLogo} />
-            </Box>
+            <img src={footerLogo} alt="TravelKeet" style={{ height: 46, display: 'block', marginBottom: '16px', objectFit: 'contain' }} />
             <Typography sx={{ fontSize: '13px', lineHeight: 1.8, opacity: 0.9 }}>
               In an industry witnessing expected growth, TravelKeet is truly carving a name for itself by adding value to enjoyable vacation destinations. We are not just building tourism facilities, we're creating experiences!
             </Typography>

@@ -4,8 +4,20 @@ const connectDB = require("./config/db");
 
 connectDB()
   .then(() => {
-    app.listen(port, () => {
+    const server = app.listen(port, () => {
       console.log(`Server running on port ${port}`);
+    });
+
+    server.on("error", (error) => {
+      if (error.code === "EADDRINUSE") {
+        console.error(
+          `Port ${port} is already in use. Stop the process using this port or set a different PORT in .env.`
+        );
+        process.exit(1);
+      }
+
+      console.error("Server startup failed:", error.message);
+      process.exit(1);
     });
   })
   .catch((error) => {
