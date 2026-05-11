@@ -20,33 +20,43 @@ const AMENITIES_ICONS = [
 
 const TABS_CONFIG = {
   'Bedroom': [
-    { label: 'Sleeping Bed (In Built)', imgKey: 0 },
-    { label: 'Sleeping Bed Pop Up', imgKey: 1 },
-    { label: 'Sleeping Sofa', imgKey: 2 },
-    { label: 'Mobile Charging point', imgKey: 3 },
-    { label: 'Moon roof/sun roof', imgKey: 4 },
-    { label: 'Fan', imgKey: 5 },
-    { label: 'Air Conditioner', imgKey: 6 },
+    { label: 'Sleeping Bed (In Built)', photoKey: 'sleepingBedInBuildPhoto', imgKey: 0 },
+    { label: 'Sleeping Bed Pop Up', photoKey: 'sleepingBedPopUpPhoto', imgKey: 1 },
+    { label: 'Sleeping Sofa', photoKey: 'sleepingSofaPhoto', imgKey: 2 },
+    { label: 'Mobile Charging point', photoKey: 'mobileChargingPhoto', imgKey: 3 },
+    { label: 'Moon roof/sun roof', photoKey: 'moonRoofPhoto', imgKey: 4 },
+    { label: 'Fan', photoKey: 'fanPhoto', imgKey: 5 },
+    { label: 'Air Conditioner', photoKey: 'airConditionerPhoto', imgKey: 6 },
   ],
   'Restroom': [
-    { label: 'Toilet', imgKey: 0 },
-    { label: 'Shower', imgKey: 1 },
-    { label: 'Sink', imgKey: 2 },
+    { label: 'Toilet', photoKey: 'bathroomPhoto', imgKey: 0 },
+    { label: 'Fresh Water Tank', photoKey: 'freshWaterTankPhoto', imgKey: 1 },
+    { label: 'Geyser', photoKey: 'geyserPhoto', imgKey: 2 },
   ],
   'Kitchen': [
-    { label: 'Stove', imgKey: 0 },
-    { label: 'Refrigerator', imgKey: 1 },
-    { label: 'Utensil Storage', imgKey: 2 },
+    { label: 'Microwave', photoKey: 'microwavePhoto', imgKey: 0 },
+    { label: 'Refrigerator', photoKey: 'refrigeratorPhoto', imgKey: 1 },
+    { label: 'Kitchen (inside)', photoKey: 'kitchenInsidePhoto', imgKey: 2 },
+    { label: 'Kitchen (external)', photoKey: 'kitchenExternalPhoto', imgKey: 3 },
   ],
   'Living room': [
-    { label: 'Sofa Seating', imgKey: 0 },
-    { label: 'Mobile Charging point', imgKey: 1 },
-    { label: 'Fan', imgKey: 2 },
+    { label: 'Entertainment system', photoKey: 'entertainmentSystemPhoto', imgKey: 0 },
+    { label: 'Dinner Table', photoKey: 'dinnerTablePhoto', imgKey: 1 },
+    { label: 'Television', photoKey: 'televisionPhoto', imgKey: 2 },
+    { label: 'Couple Friendly', photoKey: 'coupleFriendlyPhoto', imgKey: 3 },
+    { label: 'Pet Friendly', photoKey: 'petFriendlyPhoto', imgKey: 4 },
   ],
   'Others': [
-    { label: 'WiFi', imgKey: 0 },
-    { label: 'Battery Inverter', imgKey: 1 },
-    { label: 'Security Camera', imgKey: 2 },
+    { label: 'WiFi', photoKey: 'wifiPhoto', imgKey: 0 },
+    { label: 'Battery Inverter', photoKey: 'batteryInverterPhoto', imgKey: 1 },
+    { label: 'Security Camera', photoKey: 'securityCameraPhoto', imgKey: 2 },
+    { label: 'Iron Box', photoKey: 'ironBoxPhoto', imgKey: 3 },
+    { label: 'Parking Assist', photoKey: 'parkingAssistPhoto', imgKey: 4 },
+    { label: 'Solar Panel', photoKey: 'solarPanelPhoto', imgKey: 5 },
+    { label: 'Camping Tent', photoKey: 'campingTentPhoto', imgKey: 6 },
+    { label: 'Camping Accessories', photoKey: 'campingAccessoriesPhoto', imgKey: 7 },
+    { label: 'Chauffer Driver', photoKey: 'chautterDriverPhoto', imgKey: 8 },
+    { label: 'Awning', photoKey: 'awningPhoto', imgKey: 9 },
   ],
 };
 
@@ -304,7 +314,7 @@ export default function CaravanDetailsPage({ caravan, onCompare, onProceedBookin
 
           <Grid container spacing={3}>
             {activeItems.map((item, i) => {
-              const imgSrc = galleryImages[item.imgKey] || null;
+              const imgSrc = caravan?.amenityPhotos?.[item.photoKey] || galleryImages[item.imgKey] || null;
               return (
                 <Grid size={{ xs: 3 }} key={i}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

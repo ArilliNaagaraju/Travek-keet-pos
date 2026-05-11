@@ -9,29 +9,39 @@ import truckImage from "../../assets/truckimage.jpeg";
 
 const SECTION_ITEMS = {
   'Bedroom': [
-    { label: 'Sleeping Bed (In Built)', imgKey: 0 },
-    { label: 'Sleeping Bed Pop Up', imgKey: 1 },
-    { label: 'Sleeping Sofa', imgKey: 2 },
+    { label: 'Sleeping Bed (In Built)', photoKey: 'sleepingBedInBuildPhoto', imgKey: 0 },
+    { label: 'Sleeping Bed Pop Up', photoKey: 'sleepingBedPopUpPhoto', imgKey: 1 },
+    { label: 'Sleeping Sofa', photoKey: 'sleepingSofaPhoto', imgKey: 2 },
   ],
   'Restroom': [
-    { label: 'Toilet', imgKey: 0 },
-    { label: 'Shower', imgKey: 1 },
-    { label: 'Sink', imgKey: 2 },
+    { label: 'Toilet', photoKey: 'bathroomPhoto', imgKey: 0 },
+    { label: 'Fresh Water Tank', photoKey: 'freshWaterTankPhoto', imgKey: 1 },
+    { label: 'Geyser', photoKey: 'geyserPhoto', imgKey: 2 },
   ],
   'Kitchen': [
-    { label: 'Stove', imgKey: 0 },
-    { label: 'Refrigerator', imgKey: 1 },
-    { label: 'Utensil Storage', imgKey: 2 },
+    { label: 'Microwave', photoKey: 'microwavePhoto', imgKey: 0 },
+    { label: 'Refrigerator', photoKey: 'refrigeratorPhoto', imgKey: 1 },
+    { label: 'Kitchen (inside)', photoKey: 'kitchenInsidePhoto', imgKey: 2 },
+    { label: 'Kitchen (external)', photoKey: 'kitchenExternalPhoto', imgKey: 3 },
   ],
   'Living Room': [
-    { label: 'Sofa Seating', imgKey: 0 },
-    { label: 'Mobile Charging point', imgKey: 1 },
-    { label: 'Fan', imgKey: 2 },
+    { label: 'Entertainment system', photoKey: 'entertainmentSystemPhoto', imgKey: 0 },
+    { label: 'Dinner Table', photoKey: 'dinnerTablePhoto', imgKey: 1 },
+    { label: 'Television', photoKey: 'televisionPhoto', imgKey: 2 },
+    { label: 'Couple Friendly', photoKey: 'coupleFriendlyPhoto', imgKey: 3 },
+    { label: 'Pet Friendly', photoKey: 'petFriendlyPhoto', imgKey: 4 },
   ],
   'Others': [
-    { label: 'WiFi', imgKey: 0 },
-    { label: 'Battery Inverter', imgKey: 1 },
-    { label: 'Security Camera', imgKey: 2 },
+    { label: 'WiFi', photoKey: 'wifiPhoto', imgKey: 0 },
+    { label: 'Battery Inverter', photoKey: 'batteryInverterPhoto', imgKey: 1 },
+    { label: 'Security Camera', photoKey: 'securityCameraPhoto', imgKey: 2 },
+    { label: 'Iron Box', photoKey: 'ironBoxPhoto', imgKey: 3 },
+    { label: 'Parking Assist', photoKey: 'parkingAssistPhoto', imgKey: 4 },
+    { label: 'Solar Panel', photoKey: 'solarPanelPhoto', imgKey: 5 },
+    { label: 'Camping Tent', photoKey: 'campingTentPhoto', imgKey: 6 },
+    { label: 'Camping Accessories', photoKey: 'campingAccessoriesPhoto', imgKey: 7 },
+    { label: 'Chauffer Driver', photoKey: 'chautterDriverPhoto', imgKey: 8 },
+    { label: 'Awning', photoKey: 'awningPhoto', imgKey: 9 },
   ],
 };
 
@@ -57,12 +67,14 @@ function BrandMark({ size = 32, image = logo }) {
 
 function SectionGallery({ title, images = [], onImageClick }) {
   const items = SECTION_ITEMS[title] || [];
+  const amenityPhotos = images?.amenityPhotos || {};
+  const fallbackImages = images?.galleryImages || [];
   return (
     <Box sx={{ mb: 6 }}>
       <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, textAlign: 'center', minHeight: 32 }}>{title}</Typography>
       <Grid container spacing={2}>
         {items.map((item, i) => {
-          const imgSrc = images[item.imgKey] || truckImage;
+          const imgSrc = amenityPhotos[item.photoKey] || fallbackImages[item.imgKey] || truckImage;
           return (
             <Grid size={{ xs: 4 }} key={`${title}-${i}`}>
               <Box
@@ -164,11 +176,11 @@ function CompareDetailColumn({ caravan, onBookNow }) {
         </Box>
       </Box>
 
-      <SectionGallery title="Bedroom" images={galleryImages} onImageClick={setLightboxImage} />
-      <SectionGallery title="Restroom" images={galleryImages} onImageClick={setLightboxImage} />
-      <SectionGallery title="Kitchen" images={galleryImages} onImageClick={setLightboxImage} />
-      <SectionGallery title="Living Room" images={galleryImages} onImageClick={setLightboxImage} />
-      <SectionGallery title="Others" images={galleryImages} onImageClick={setLightboxImage} />
+      <SectionGallery title="Bedroom" images={{ amenityPhotos: caravan?.amenityPhotos || {}, galleryImages }} onImageClick={setLightboxImage} />
+      <SectionGallery title="Restroom" images={{ amenityPhotos: caravan?.amenityPhotos || {}, galleryImages }} onImageClick={setLightboxImage} />
+      <SectionGallery title="Kitchen" images={{ amenityPhotos: caravan?.amenityPhotos || {}, galleryImages }} onImageClick={setLightboxImage} />
+      <SectionGallery title="Living Room" images={{ amenityPhotos: caravan?.amenityPhotos || {}, galleryImages }} onImageClick={setLightboxImage} />
+      <SectionGallery title="Others" images={{ amenityPhotos: caravan?.amenityPhotos || {}, galleryImages }} onImageClick={setLightboxImage} />
 
       <Box sx={{ display: 'flex', gap: 2, mt: 'auto', mb: 8 }}>
         <Button

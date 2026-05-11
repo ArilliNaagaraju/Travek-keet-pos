@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Box, Typography, Button, Container, Paper, Stepper, Step, StepLabel, Grid2 as Grid, TextField, Avatar, Tabs, Tab, Card, Divider, Chip, CircularProgress } from "@mui/material";
+import { Box, Typography, Button, Container, Paper, Stepper, Step, StepLabel, Grid2 as Grid, TextField, Avatar, Tabs, Tab, Card, Divider, Chip, CircularProgress, Popover, IconButton } from "@mui/material";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import logo from "../../assets/logo.jpeg";
 import PaymentModal from "../../components/Payment/PaymentModal";
 
@@ -53,6 +55,128 @@ function SectionHeader({ title }) {
     <Typography variant="h6" sx={{ fontWeight: 800, color: '#111827', mb: 3, mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
       <Box sx={{ width: 4, height: 24, bgcolor: '#52d88d', borderRadius: 1 }} /> {title}
     </Typography>
+  );
+}
+
+function formatISODate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatDisplayDate(value) {
+  if (!value) return '';
+  const [y, m, d] = value.split('-');
+  return `${d}-${m}-${y}`;
+}
+
+function parseISODate(value) {
+  if (!value) return null;
+  const [y, m, d] = value.split('-').map(Number);
+  const dt = new Date(y, (m || 1) - 1, d || 1);
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
+function CalendarInput({ label, value, onChange }) {
+  const selectedDate = parseISODate(value);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [viewDate, setViewDate] = useState(selectedDate || new Date());
+  const open = Boolean(anchorEl);
+
+  const startOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+  const endOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0);
+  const startWeekDay = startOfMonth.getDay();
+  const daysInMonth = endOfMonth.getDate();
+  const prevMonthDays = new Date(viewDate.getFullYear(), viewDate.getMonth(), 0).getDate();
+  const cells = [];
+
+  for (let i = startWeekDay - 1; i >= 0; i--) cells.push({ day: prevMonthDays - i, current: false });
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, current: true });
+  while (cells.length < 42) cells.push({ day: cells.length - (startWeekDay + daysInMonth) + 1, current: false });
+
+  const monthLabel = viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const weekLabels = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+
+  return (
+    <>
+      <TextField
+        label={label}
+        value={formatDisplayDate(value)}
+        onClick={(e) => setAnchorEl(e.currentTarget)}
+        placeholder="dd-mm-yyyy"
+        fullWidth
+        size="small"
+        InputLabelProps={{ shrink: true }}
+        inputProps={{ readOnly: true }}
+      />
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <Box sx={{ width: 320, bgcolor: '#e9eaf2', borderRadius: 2.5, overflow: 'hidden', boxShadow: '0 10px 30px rgba(15,23,42,0.14)', border: '1px solid #dde1eb' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2.5, pt: 2, pb: 1.5 }}>
+            <Typography sx={{ fontSize: '24px', fontWeight: 800, color: '#222937', lineHeight: 1.1, letterSpacing: 0.2 }}>{monthLabel}</Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <IconButton size="small" onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))} sx={{ bgcolor: '#2a7f5c', color: '#fff', borderRadius: 1.2, width: 32, height: 30, '&:hover': { bgcolor: '#236b4d' } }}>
+                <KeyboardArrowLeftIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton size="small" onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))} sx={{ bgcolor: '#2a7f5c', color: '#fff', borderRadius: 1.2, width: 32, height: 30, '&:hover': { bgcolor: '#236b4d' } }}>
+                <KeyboardArrowRightIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Box>
+          </Box>
+          <Box sx={{ borderTop: '1px solid #d8dde8', px: 2, pt: 1.2, pb: 1.2 }}>
+            <Grid container columns={7} sx={{ mb: 0.5 }}>
+              {weekLabels.map((w) => (
+                <Grid key={w} size={1}>
+                  <Typography sx={{ textAlign: 'center', fontSize: '13px', fontWeight: 700, color: '#2a3140', lineHeight: 1.2 }}>{w}</Typography>
+                </Grid>
+              ))}
+            </Grid>
+            <Grid container columns={7} rowSpacing={0.6}>
+              {cells.map((cell, idx) => {
+                const monthDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), cell.current ? cell.day : (idx < startWeekDay ? cell.day - prevMonthDays : daysInMonth + cell.day));
+                const isSelected = selectedDate && formatISODate(monthDate) === formatISODate(selectedDate);
+                return (
+                  <Grid key={`${cell.day}-${idx}`} size={1}>
+                    <Box
+                      onClick={() => {
+                        if (!cell.current) return;
+                        onChange(formatISODate(monthDate));
+                        setAnchorEl(null);
+                      }}
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        mx: 'auto',
+                        borderRadius: 1.5,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '15px',
+                        fontWeight: isSelected ? 700 : 500,
+                        color: cell.current ? '#3a4253' : '#9ea7b8',
+                        bgcolor: isSelected ? '#2a7f5c' : 'transparent',
+                        color: isSelected ? '#fff' : (cell.current ? '#3a4253' : '#9ea7b8'),
+                        cursor: cell.current ? 'pointer' : 'default',
+                        '&:hover': {
+                          bgcolor: cell.current && !isSelected ? '#dfe3ef' : undefined,
+                        },
+                      }}
+                    >
+                      {cell.day}
+                    </Box>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </Box>
+        </Box>
+      </Popover>
+    </>
   );
 }
 
@@ -260,9 +384,9 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
   const activeStepIndex = stage === "step1" ? 0 : stage === "step2" ? 1 : 2;
 
   return (
-    <Box sx={{ bgcolor: '#f9fafb', minHeight: '100vh', py: 4 }}>
-      <Container maxWidth="lg">
-        <Paper elevation={0} sx={{ p: { xs: 2, md: 6 }, borderRadius: 4, border: '1px solid #e5e7eb' }}>
+      <Box sx={{ bgcolor: '#f9fafb', minHeight: '100vh', py: 4 }}>
+        <Container maxWidth="lg">
+          <Paper elevation={0} sx={{ p: { xs: 2, md: 6 }, borderRadius: 4, border: '1px solid #e5e7eb' }}>
           <TopNav onGoHome={onGoHome} />
 
           {/* Booking Hero Banner */}
@@ -316,8 +440,8 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
                   <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>{caravan?.details?.vehicleNumber} ({caravan?.details?.vehicleType})</Typography>
                   <Typography variant="body1" sx={{ color: '#52d88d', fontWeight: 700, mb: 3 }}>Rate: ₹{caravan?.pricing?.pricePerNight}/- Per Night</Typography>
                   <Grid container spacing={2}>
-                    <Grid size={{ xs: 6 }}><TextField label="Pickup Date" type="date" value={formData.caravanBooking.pickupDate} onChange={(e) => handleInputChange('caravanBooking', 'pickupDate', e.target.value)} InputLabelProps={{ shrink: true }} fullWidth size="small" /></Grid>
-                    <Grid size={{ xs: 6 }}><TextField label="Drop Date" type="date" value={formData.caravanBooking.dropDate} onChange={(e) => handleInputChange('caravanBooking', 'dropDate', e.target.value)} InputLabelProps={{ shrink: true }} fullWidth size="small" /></Grid>
+                    <Grid size={{ xs: 6 }}><CalendarInput label="Pickup Date" value={formData.caravanBooking.pickupDate} onChange={(val) => handleInputChange('caravanBooking', 'pickupDate', val)} /></Grid>
+                    <Grid size={{ xs: 6 }}><CalendarInput label="Drop Date" value={formData.caravanBooking.dropDate} onChange={(val) => handleInputChange('caravanBooking', 'dropDate', val)} /></Grid>
                     <Grid size={{ xs: 4 }}><TextField label="Pickup Location" placeholder="Enter city" value={formData.caravanBooking.pickupLocation} onChange={(e) => handleInputChange('caravanBooking', 'pickupLocation', e.target.value)} fullWidth size="small" /></Grid>
                     <Grid size={{ xs: 4 }}><TextField label="Destination" placeholder="Enter destination" value={formData.caravanBooking.destination} onChange={(e) => handleInputChange('caravanBooking', 'destination', e.target.value)} fullWidth size="small" /></Grid>
                     <Grid size={{ xs: 4 }}><TextField label="Drop Location" placeholder="Enter drop city" value={formData.caravanBooking.dropLocation} onChange={(e) => handleInputChange('caravanBooking', 'dropLocation', e.target.value)} fullWidth size="small" /></Grid>
@@ -341,8 +465,8 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
                   <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>OOTY HIDDEN VALLEY JUNGLE CAMP</Typography>
                   <Typography variant="body1" sx={{ color: '#52d88d', fontWeight: 700, mb: 3 }}>Rate: ₹ 5,000/- Per Night</Typography>
                   <Grid container spacing={2}>
-                    <Grid size={{ xs: 6 }}><TextField label="Check-in Date" type="date" value={formData.nestBooking.checkInDate} onChange={(e) => handleInputChange('nestBooking', 'checkInDate', e.target.value)} InputLabelProps={{ shrink: true }} fullWidth size="small" /></Grid>
-                    <Grid size={{ xs: 6 }}><TextField label="Check-out Date" type="date" value={formData.nestBooking.checkOutDate} onChange={(e) => handleInputChange('nestBooking', 'checkOutDate', e.target.value)} InputLabelProps={{ shrink: true }} fullWidth size="small" /></Grid>
+                    <Grid size={{ xs: 6 }}><CalendarInput label="Check-in Date" value={formData.nestBooking.checkInDate} onChange={(val) => handleInputChange('nestBooking', 'checkInDate', val)} /></Grid>
+                    <Grid size={{ xs: 6 }}><CalendarInput label="Check-out Date" value={formData.nestBooking.checkOutDate} onChange={(val) => handleInputChange('nestBooking', 'checkOutDate', val)} /></Grid>
                     <Grid size={{ xs: 6 }}><TextField label="Adults" type="number" value={formData.nestBooking.adults} onChange={(e) => handleInputChange('nestBooking', 'adults', e.target.value)} fullWidth size="small" /></Grid>
                     <Grid size={{ xs: 6 }}><TextField label="Children" type="number" value={formData.nestBooking.children} onChange={(e) => handleInputChange('nestBooking', 'children', e.target.value)} fullWidth size="small" /></Grid>
                   </Grid>
@@ -411,16 +535,16 @@ export default function BookingFlowPage({ caravan, onFinish, onGoHome }) {
               </Button>
             </Box>
           </Box>
-        </Paper>
-      </Container>
-      <PaymentModal
-        open={showPayment}
-        onClose={(success) => {
-          setShowPayment(false);
-          if (success) saveBookingToDb();
-        }}
-        amount={getGrandTotal()}
-      />
-    </Box>
+          </Paper>
+        </Container>
+        <PaymentModal
+          open={showPayment}
+          onClose={(success) => {
+            setShowPayment(false);
+            if (success) saveBookingToDb();
+          }}
+          amount={getGrandTotal()}
+        />
+      </Box>
   );
 }

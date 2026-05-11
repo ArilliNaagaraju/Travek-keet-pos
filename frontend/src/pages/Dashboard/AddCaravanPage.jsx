@@ -295,7 +295,8 @@ export default function AddCaravanPage({ onCancel, onSubmit }) {
 
       // Amenity photos (only for Yes-selected amenities)
       Object.entries(amenityPhotos).forEach(([key, file]) => {
-        if (file) submitData.append(key, file);
+        const amenityKey = key.replace(/Photo$/, '');
+        if (file && formData[amenityKey] === 'Yes') submitData.append(key, file);
       });
 
       const response = await fetch('http://localhost:5000/api/caravans', {

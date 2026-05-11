@@ -52,20 +52,20 @@ function Pair({ label, placeholder, type = "text", isFile = false, value, onChan
 
 export default function RegisterPage({ onCancel, onSubmit }) {
   const [formData, setFormData] = useState({
-    ownerName: '',
-    email: '',
-    altNumber: '',
-    photo: null,
-    aadhaar: null,
-    pan: null,
-    brandName: '',
-    company: '',
-    ownership: '',
-    officeAddress: '',
-    state: '',
-    zipCode: '',
-    city: '',
-    companyGst: ''
+    ownerName: 'Aarav Sharma',
+    email: 'aarav.sharma@suntrailmobility.in',
+    altNumber: '9876543210',
+    photo: { name: 'aarav-sharma-photo.jpg' },
+    aadhaar: { name: 'aarav-sharma-aadhaar.pdf' },
+    pan: { name: 'suntrailmobility-pan.pdf' },
+    brandName: 'SunTrail Campers',
+    company: 'SunTrail Mobility Pvt Ltd',
+    ownership: 'Private Limited',
+    officeAddress: '42, MG Road, Indiranagar',
+    state: 'Karnataka',
+    zipCode: '560038',
+    city: 'Bengaluru',
+    companyGst: '29ABCDE1234F1Z5'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
